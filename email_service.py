@@ -1,5 +1,6 @@
 import smtplib
 from email.message import EmailMessage
+import common
 
 
 def send_verification(user):
@@ -17,6 +18,17 @@ def send_verification(user):
     smtp = smtplib.SMTP('smtp.gmail.com', 587)
     smtp.ehlo()
     smtp.starttls()
-    smtp.login('flx.grimm@gmail.com', 'KoMpLeX_1')
+    cfg = common.config()
+    smtp.login(cfg['email'], cfg['password'])
     smtp.send_message(msg)
     smtp.quit()
+
+
+def valid_email(email):
+    split1 = email.split('@')
+    if len(split1) <= 1:
+        return False
+    split2 = split1[1].split('.')
+    if len(split2) <= 1:
+        return False
+    return True

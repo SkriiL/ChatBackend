@@ -28,7 +28,12 @@ def signed_in(user):
 
 @sio.on('create-user')
 def create_user(user_str):
-    user.create(user_str)
+    errors = user.create(user_str)
+    created_user(errors)
+
+
+def created_user(errors):
+    sio.emit('created-user', errors)
 
 
 @sio.on('verify-email')

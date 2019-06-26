@@ -12,3 +12,12 @@ def max_id(table):
         if r[0] > max:
             max = r[0]
     return max
+
+
+def config():
+    file = open('../config.txt', 'r')
+    cfg = {}
+    for l in file.readlines():
+        l = l.split(':')
+        cfg[l[0]] = l[1]
+    return cfg

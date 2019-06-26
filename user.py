@@ -54,6 +54,10 @@ def create(user_str, send_verification=True):
     except ValueError:
         id = common.max_id('users') + 1
         params = (id, user[0], user[1], user[2], verified)
+    if send_verification:
+        errors = check_for_sign_up_errors(list_to_user([id, user[0], user[1], user[2], False]))
+        if 1 in errors or 2 in errors or 3 in errors:
+            return errors
     conn = sqlite3.connect('db.db')
     c = conn.cursor()
     c.execute('INSERT INTO users VALUES(?,?,?,?, ?)', params)
@@ -61,6 +65,7 @@ def create(user_str, send_verification=True):
     conn.close()
     if send_verification:
         email_service.send_verification(list_to_user([id, user[0], user[1], user[2], False]))
+    return [0]
 
 
 def delete(id):
@@ -89,9 +94,21 @@ def sign_in(user_str):
         return None
 
 
+def check_for_sign_up_errors(user):
+    errors = []
+    for u in get_all():
+        if user['email'] == u['email'] and 2 not in errors:
+            errors.append(2)
+        if user['username'] == u['username'] and 1 not in errors:
+            errors.append(1)
+        if not email_service.valid_email(user['email']) and 3 not in errors:
+            errors.append(3)
+    if len(errors) == 0:
+        errors.append(0)
+    return errors
+
+
 def verify_email(id):
     user = get_single_by_id(id)
-    print(user)
     user_str = str(user['id']) + ';' + user['username'] + ';' + user['email'] + ';' + user['password'] + ";True"
-    print(user_str)
     edit(user_str)
