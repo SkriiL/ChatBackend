@@ -24,7 +24,7 @@ def get_single_by_id(id):
     conn = sqlite3.connect('db.db')
     c = conn.cursor()
     params = (id,)
-    c.execute('SELECT * FROM users WHERE id=?', id)
+    c.execute('SELECT * FROM users WHERE id=?', params)
     res = c.fetchone()
     conn.close()
     if res is None:
