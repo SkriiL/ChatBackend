@@ -15,6 +15,7 @@ def index():
 
 @sio.on('connect')
 def connect():
+    sio.emit('connected', request.sid)
     print(request.sid + ' connected')
 
 
