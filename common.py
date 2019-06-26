@@ -11,3 +11,4 @@ def max_id(table):
     for r in res:
         if r[0] > max:
             max = r[0]
+    return max
