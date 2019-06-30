@@ -3,9 +3,14 @@ from flask_socketio import SocketIO
 import user
 import friends
 import friend_request
+import chat
+import message
 
 app = Flask(__name__)
 sio = SocketIO(app)
+
+
+sids = {}
 
 
 @app.route('/')
@@ -25,7 +30,9 @@ def connect():
 @sio.on('sign-in')
 def sign_in(str, sid):
     res = user.sign_in(str)
-    sio.emit('signed-in', res, room=sid)
+    sio.emit('signed-in', res, room=sid['_value'])
+    if res is not None:
+        sids[res['id']] = sid['_value']
 
 
 @sio.on('create-user')
@@ -88,6 +95,49 @@ def accept_friend_request(fr_id, sid):
 @sio.on('reject-friend-request')
 def reject_friend_request(fr_id, sid):
     friend_request.reject(fr_id)
+
+
+# --------------- CHATS -------------
+
+
+@sio.on('get-chats-for-user')
+def get_chats_for_user(user_id, sid):
+    chats = chat.get_all_for_user(user_id)
+    sio.emit('chats-for-user', chats)
+
+
+@sio.on('get-chat-between-users')
+def get_chat_between_users(users, sid):
+    c = chat.get_between_users(users)
+    sio.emit('chat', c, room=sid['_value'])
+
+
+@sio.on('create-chat')
+def create_chat(users, sid):
+    id = chat.create(users)
+    sio.emit('created-chat', id, room=sid['_value'])
+
+
+@sio.on('get-single-chat')
+def get_single_chat(chat_id, sid):
+    c = chat.get_single_by_id(chat_id)
+    sio.emit('single-chat', c)
+
+
+# ---------------- MESSAGES ------------
+
+
+@sio.on('get-messages-sorted-for-chat')
+def get_messages_for_chat(chat_id, sid):
+    messages = message.get_all_sorted_for_chat(chat_id)
+    sio.emit('messages-sorted-for-chat-' + chat_id, messages)
+
+
+@sio.on('send-message')
+def send_message(message_str, sid):
+    user_id = message.send_message(message_str)
+    sio.emit('new-message', 'new')
+
 
 
 if __name__ == '__main__':
