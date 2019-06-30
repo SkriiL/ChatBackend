@@ -5,6 +5,7 @@ import friends
 import friend_request
 import chat
 import message
+import invitation
 
 app = Flask(__name__)
 sio = SocketIO(app)
@@ -37,7 +38,7 @@ def sign_in(str, sid):
 
 @sio.on('create-user')
 def create_user(user_str, sid):
-    errors = user.create(user_str)
+    errors = user.create(user_str, True)
     sio.emit('created-user', errors)
 
 
@@ -51,11 +52,6 @@ def get_all_users(str, sid):
 def get_user_by_id(user_id, sid):
     u = user.get_single_by_id(user_id)
     sio.emit('single-user', u)
-
-
-@sio.on('verify-email')
-def verify_email(user_id, sid):
-    user.verify_email(user_id)
 
 
 # ------------------ FRIENDS -----------------
@@ -122,6 +118,18 @@ def create_chat(users, sid):
 def get_single_chat(chat_id, sid):
     c = chat.get_single_by_id(chat_id)
     sio.emit('single-chat', c)
+
+
+@sio.on('invite')
+def invite(arg, sid):
+    link = invitation.invite()
+    sio.emit('invitation', link)
+
+
+@sio.on('activate-invitation')
+def activate_invitation(id, sid):
+    res = invitation.activate(id)
+    sio.emit('activated-invitation', res)
 
 
 # ---------------- MESSAGES ------------
