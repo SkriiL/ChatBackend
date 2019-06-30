@@ -1,10 +1,19 @@
 import sqlite3
 import common
 import email_service
+import permissions
 
 
 def list_to_user(user_list):
-    user = {'id': user_list[0], 'username': user_list[1], 'email': user_list[2], 'password': user_list[3], 'verified': user_list[4]}
+    user = {
+        'id': user_list[0],
+        'username': user_list[1],
+        'email': user_list[2],
+        'password': user_list[3],
+        'verified': user_list[4],
+        'status': user_list[5],
+        'permissions': permissions.get_single_by_id(user_list[6])
+    }
     return user
 
 
@@ -50,21 +59,21 @@ def create(user_str, send_verification=True):
         verified = user[4]
     try:
         id = int(user[0])
-        params = (id, user[1], user[2], user[3], verified)
+        params = (id, user[1], user[2], user[3], verified, user[5], user[6])
     except ValueError:
         id = common.max_id('users') + 1
-        params = (id, user[0], user[1], user[2], verified)
+        params = (id, user[0], user[1], user[2], verified, '', 2)
     if send_verification:
-        errors = check_for_sign_up_errors(list_to_user([id, user[0], user[1], user[2], False]))
+        errors = check_for_sign_up_errors(list_to_user([id, user[0], user[1], user[2], False, '', 2]))
         if 1 in errors or 2 in errors or 3 in errors:
             return errors
     conn = sqlite3.connect('db.db')
     c = conn.cursor()
-    c.execute('INSERT INTO users VALUES(?,?,?,?, ?)', params)
+    c.execute('INSERT INTO users VALUES(?,?,?,?,?,?,?)', params)
     conn.commit()
     conn.close()
     if send_verification:
-        email_service.send_verification(list_to_user([id, user[0], user[1], user[2], False]))
+        email_service.send_verification(list_to_user([id, user[0], user[1], user[2], False, '', 2]))
     return [0]
 
 
