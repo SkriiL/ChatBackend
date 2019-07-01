@@ -54,6 +54,11 @@ def get_user_by_id(user_id, sid):
     sio.emit('single-user', u)
 
 
+@sio.on('edit-user')
+def set_status(u, sid):
+    user.edit(u)
+
+
 # ------------------ FRIENDS -----------------
 
 
